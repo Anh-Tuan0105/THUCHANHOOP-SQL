@@ -7,7 +7,7 @@ public class Cau7 {
         int n = scanner.nextInt();
 
         double sqrt = Math.sqrt(n);
-        if (sqrt == (int) sqrt) {
+        if (sqrt * sqrt == n) {
             System.out.println(n + " là số chính phương.");
         } else {
             System.out.println(n + " không phải là số chính phương.");
