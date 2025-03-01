@@ -11,7 +11,23 @@ public class Cau17 {
         }
         return binary.toString();
     }
+    /*public static String toBinary(int n) {
+        if (n == 0) return "0";
 
+        int[] binary = new int[32];
+        int index = 0;
+        while (n > 0) {
+            binary[index] = n % 2;
+            n = n / 2;
+            index++;
+        }
+        String result = "";
+        for (int i = index - 1; i >= 0; i--) {
+            result += binary[i];
+        }
+        return result;
+    }
+    */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Nhập số thập phân: ");
