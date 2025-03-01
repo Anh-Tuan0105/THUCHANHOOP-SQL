@@ -59,19 +59,19 @@ class NhanVien {
         System.out.println("So luong nhan vien: " + soLuongNhanVien);
     }
 
-    public void input() {
-        Scanner sc = new Scanner(System.in);
+    public void input(Scanner sc) {
         System.out.print("Nhap ma so nhan vien: ");
         maSo = sc.nextLine();
         System.out.print("Nhap ho ten nhan vien: ");
         hoTen = sc.nextLine();
         System.out.print("Nhap he so luong: ");
         heSoLuong = sc.nextFloat();
-        sc.close();
+        sc.nextLine();
     }
 
     public void output() {
-        System.out.println(hoTen + " co ma so " + maSo + " co he so luong " + heSoLuong + " co luong la " + tinhLuong());
+        System.out
+                .println(hoTen + " co ma so " + maSo + " co he so luong " + heSoLuong + " co luong la " + tinhLuong());
     }
 
     public String toString() {
@@ -89,10 +89,10 @@ class DSNhanVien {
         ds = new NhanVien[soLuong];
     }
 
-    public void dsInput() {
+    public void dsInput(Scanner sc) {
         for (int i = 0; i < soLuong; i++) {
             ds[i] = new NhanVien();
-            ds[i].input();
+            ds[i].input(sc);
         }
     }
 
@@ -102,15 +102,21 @@ class DSNhanVien {
             ds[i].output();
         }
     }
+
+    public int getSoLuong() {
+        return soLuong;
+    }
+
 }
 
 public class demo {
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
         NhanVien.luongCoBan = 1000000;
         NhanVien nv1 = new NhanVien();
         NhanVien nv2 = new NhanVien("002", "Nguyen Thanh Bao Ngan", 2.5f);
         NhanVien nv3 = new NhanVien(nv2);
-        nv1.input();
+        nv1.input(sc);
         nv1.output();
         nv2.output();
         nv3.setHoTen("Nguyen Hoang Huynh");
@@ -127,5 +133,11 @@ public class demo {
         }
         System.out.println("Nhan vien co he so luong cao nhat la: ");
         System.out.println(nvt);
+
+        DSNhanVien ds = new DSNhanVien(3);
+        ds.dsInput(sc);
+        ds.dsOutput();
+        NhanVien.inSoluongNhanVien();
+        sc.close();
     }
 }
