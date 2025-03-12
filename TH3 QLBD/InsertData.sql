@@ -30,37 +30,42 @@ JOIN DOI D ON D.MADOI = C.MADOI
 GROUP BY D.MADOI, D.TENDOI
 
 --CAU2,3
-SELECT  DISTINCT T1.MaTD, 
+SELECT  T1.MaTD, 
        CONCAT(T1.MaDoi, '-', T2.MaDoi) AS DoiTranDau,
        CONCAT(T1.SoBanThang, '-', T2.SoBanThang) AS TySo
 FROM CT_TranDau T1
 JOIN CT_TranDau T2 ON T1.MaTD = T2.MaTD AND T1.MaDoi <> T2.MaDoi
-WHERE T1.MaDoi < T2.MaDoi --TRANH LAY TRUNG
-GROUP BY T1.MaTD, T1.MaDoi, T1.SoBanThang, T2.MaDoi, T2.SoBanThang;
+WHERE T1.MADOI < T2.MADOI
+
 
 
 --CAU4
-SELECT MaTD, MaDoi, 
-       CASE 
-           WHEN SoBanThang = (SELECT MAX(SoBanThang) FROM CT_TranDau WHERE MaTD = CT.MaTD) THEN 3
-           WHEN SoBanThang = (SELECT MIN(SoBanThang) FROM CT_TranDau WHERE MaTD = CT.MaTD) THEN 0
-           ELSE 1
-       END AS Diem
-FROM CT_TranDau CT;
+
+SELECT CT.MATD, CT.MADOI, 
+	CASE 
+	WHEN SOBANTHANG = TMP.MAX_CT AND SOBANTHANG <> TMP.MIN_CT THEN 3
+	WHEN SOBANTHANG = TMP.MIN_CT AND SOBANTHANG <> TMP.MAX_CT THEN 0
+	ELSE 1 END
+	AS DIEM
+FROM CT_TRANDAU CT
+JOIN
+	(SELECT MATD, MAX(SOBANTHANG) AS MAX_CT, MIN(SOBANTHANG) AS MIN_CT
+	FROM CT_TRANDAU
+	GROUP BY MATD) TMP ON CT.MATD = TMP.MATD
 
 --CAU5
 WITH DiemTranDau AS (
-    SELECT CT.MaTD, CT.MaDoi,
-           CASE 
-               WHEN CT.SoBanThang = MAX_CT.MaxBanThang THEN 3  -- Đội thắng
-               WHEN CT.SoBanThang = MIN_CT.MinBanThang THEN 0  -- Đội thua
-               ELSE 1  -- Trường hợp hòa
-           END AS Diem
-    FROM CT_TranDau CT
-    JOIN (SELECT MaTD, MAX(SoBanThang) AS MaxBanThang FROM CT_TranDau GROUP BY MaTD) AS MAX_CT 
-         ON CT.MaTD = MAX_CT.MaTD
-    JOIN (SELECT MaTD, MIN(SoBanThang) AS MinBanThang FROM CT_TranDau GROUP BY MaTD) AS MIN_CT 
-         ON CT.MaTD = MIN_CT.MaTD
+SELECT CT.MATD, CT.MADOI, 
+	CASE 
+	WHEN SOBANTHANG = TMP.MAX_CT AND SOBANTHANG <> TMP.MIN_CT THEN 3
+	WHEN SOBANTHANG = TMP.MIN_CT AND SOBANTHANG <> TMP.MAX_CT THEN 0
+	ELSE 1 END
+	AS DIEM
+FROM CT_TRANDAU CT
+JOIN
+	(SELECT MATD, MAX(SOBANTHANG) AS MAX_CT, MIN(SOBANTHANG) AS MIN_CT
+	FROM CT_TRANDAU
+	GROUP BY MATD) TMP ON CT.MATD = TMP.MATD
 )
 SELECT D.MaDoi, D.TenDoi, SUM(Diem) AS TongDiem
 FROM Doi D
@@ -68,22 +73,29 @@ JOIN DiemTranDau DT ON D.MaDoi = DT.MaDoi
 GROUP BY D.MaDoi, D.TenDoi;
 
 --CAU6
+WITH MaxMin AS (
+    SELECT MaTD, 
+           MAX(SoBanThang) AS MaxBanThang, 
+           MIN(SoBanThang) AS MinBanThang 
+    FROM CT_TranDau 
+    GROUP BY MaTD
+)
 SELECT D.MaDoi, D.TenDoi, 
        SUM(
            CASE 
-               WHEN CT.SoBanThang = MaxMin_CT.MaxBanThang THEN 3  -- Thắng
-               WHEN CT.SoBanThang = MaxMin_CT.MinBanThang THEN 0  -- Thua
+               WHEN CT.SoBanThang = M.MaxBanThang AND CT.SoBanThang <> M.MinBanThang THEN 3  -- Thắng
+               WHEN CT.SoBanThang = M.MinBanThang AND CT.SoBanThang <> M.MaxBanThang THEN 0  -- Thua
                ELSE 1  -- Hòa
            END
        ) AS TongDiem,
        SUM(CT.SoBanThang) - SUM(Opp.SoBanThang) AS HieuSoBanThang
 FROM Doi D
 JOIN CT_TranDau CT ON D.MaDoi = CT.MaDoi
-JOIN (SELECT MaTD, MAX(SoBanThang) AS MaxBanThang, MIN(SoBanThang) AS MinBanThang 
-      FROM CT_TranDau GROUP BY MaTD) AS MaxMin_CT ON CT.MaTD = MaxMin_CT.MaTD
+JOIN MaxMin M ON CT.MaTD = M.MaTD
 JOIN CT_TranDau Opp ON CT.MaTD = Opp.MaTD AND CT.MaDoi <> Opp.MaDoi
 GROUP BY D.MaDoi, D.TenDoi
 ORDER BY TongDiem DESC, HieuSoBanThang DESC;
+
 
 --CAU7
 SELECT D1.MaDoi AS Doi1, D2.MaDoi AS Doi2
